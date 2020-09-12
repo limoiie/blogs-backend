@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Home Page</title>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+
+    {% load static %}
+
+    <script src="{% static "blogs/js/main.js" %}"></script>
+</head>
+
+<form action="">
+    {% csrf_token %}
+    <label>
+        Hello, World
+        <input type="text">
+    </label>
+</form>
+
+<body>
+{% if latest_blogs %}
+    <ul>
+        {% for blog in latest_blogs %}
+            <li>
+                <a href="/blogs/{{ blog.id }}/">{{ blog.title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+</body>
+</html>
