@@ -7,6 +7,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+TIME_FMT = '%Y/%m/%d %H:%M:%S'
+
 
 def upload_to(ins, category, filename):
     dirname = ins.create_time.date().strftime(
@@ -82,13 +84,11 @@ def get_tags(tags):
 
 
 def str2time(str_time):
-    time_fmt = '%Y/%m/%d %H:%M:%S'
-    return datetime.datetime.strptime(str_time, time_fmt)
+    return datetime.datetime.strptime(str_time, TIME_FMT)
 
 
 def time2str(time):
-    time_fmt = '%Y/%m/%d %H:%M:%S'
-    return time.strftime(time_fmt)
+    return time.strftime(TIME_FMT)
 
 
 def store_file(blog, filename, ext, content):
