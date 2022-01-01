@@ -12,7 +12,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('url', type=str, help='Url to remote blog repo.')
+        parser.add_argument('force', type=bool, default=False,
+                            help='Force to refresh all the blogs.')
 
-    def handle(self, url, *args, **options):
+    def handle(self, url, force, *args, **options):
         logger.info(f'Refresh blogs from {url}...')
-        refresh_blogs()
+        refresh_blogs(force)

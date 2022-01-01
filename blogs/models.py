@@ -148,6 +148,8 @@ class BlogWrapper:
             'abstract': blog.abstract,
             'createTime': time2str(blog.create_time),
             'editTime': time2str(blog.edit_time),
+            'mdDocument': None,
+            'htmlDocument': None
         }
 
         return data
@@ -155,9 +157,15 @@ class BlogWrapper:
     @staticmethod
     def blog2json_detail(blog):
         data = BlogWrapper.blog2json(blog)
-        doc = blog.md_doc.read()
-        data['mdDocument'] = doc.decode('utf-8')
-        blog.md_doc.close()
+
+        try:
+            doc = blog.html_doc.read()
+            data['htmlDocument'] = doc.decode('utf-8')
+            blog.html_doc.close()
+        except ValueError:
+            doc = blog.md_doc.read()
+            data['mdDocument'] = doc.decode('utf-8')
+            blog.md_doc.close()
         return data
 
 
