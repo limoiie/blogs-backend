@@ -8,6 +8,7 @@ import pytz
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
+from blogs.apis.core.decorate_html import decorate_html
 from blogs.models import Blog, get_author
 
 BLOG_EXTENSIONS = ['.md', '.org', '.html']
@@ -20,48 +21,35 @@ TZ = pytz.timezone('Asia/Shanghai')
 logger = logging.getLogger(__file__)
 
 
-def fix_html(html: bytes):
-    import re
-
-    def make_header_as_link(content):
-        new_content = b''
-        prev_pos = 0
-        for m in re.finditer(r'<h[2-9] id="(.*)">(.*)<'.encode(), content):
-            header_id, header_name = m.group(1).decode(), m.group(2).decode()
-            name_begin, name_end = m.span(2)
-            # wrap name into a link
-            link = f'<a href="#{header_id}">{header_name}</a>'.encode()
-            new_content += content[prev_pos:name_begin] + link
-            prev_pos = name_end
-        return new_content + content[prev_pos:]
-
-    html = make_header_as_link(html)
-    return html
-
-
-def fetch_blog_repo(try_times=3):
+def fetch_blog_repo(no_pull, try_times=3):
     """
     Fetch blogs from repository.
+
+    :param no_pull: Do not pull repo if already cloned. This is useful when
+    we only want to reprocess the blogs while no need for updating the repo.
+    :param try_times: maximum retry-times after some network error.
     :return: The path to fetched blogs
     """
     blog_repo = default_storage.path(BLOG_REPO_LOCAL_REL_PATH)
-    return blog_repo
-    # while True:
-    #     try:
-    #         if default_storage.exists(blog_repo):
-    #             logger.info(f'git pull...')
-    #             subprocess.check_call(
-    #                 ['git', 'pull', '--no-rebase'], cwd=blog_repo)
-    #         else:
-    #             logger.info(f'git clone {BLOG_REPO_URL}')
-    #             subprocess.check_call(
-    #                 ['git', 'clone', BLOG_REPO_URL, blog_repo])
-    #         logger.info(f'fetch repo, done')
-    #         return blog_repo
-    #     except subprocess.CalledProcessError as e:
-    #         if try_times <= 0:
-    #             raise e
-    #         try_times -= 1
+    while True:
+        try:
+            if default_storage.exists(blog_repo):
+                if no_pull:
+                    return blog_repo
+
+                logger.info(f'git pull...')
+                subprocess.check_call(
+                    ['git', 'pull', '--no-rebase'], cwd=blog_repo)
+            else:
+                logger.info(f'git clone {BLOG_REPO_URL}')
+                subprocess.check_call(
+                    ['git', 'clone', BLOG_REPO_URL, blog_repo])
+            logger.info(f'fetch repo, done')
+            return blog_repo
+        except subprocess.CalledProcessError as e:
+            if try_times <= 0:
+                raise e
+            try_times -= 1
 
 
 def to_pandoc_format(fmt):
@@ -79,9 +67,10 @@ def convert_to_html(fp: pathlib.Path):
     if fmt == 'html':
         return content
 
-    html = subprocess.check_output(['pandoc', '-f', fmt, '-t', 'html'],
-                                   input=content)
-    html = fix_html(html)
+    pandoc_cmdline = ['pandoc', '-f', fmt, '-t', 'html',
+                      '--katex', '--no-highlight']
+    html = subprocess.check_output(pandoc_cmdline, input=content)
+    html = decorate_html(html)
     return html
 
 
@@ -146,9 +135,9 @@ def convert_blogs_and_store_into_db(blog_repo, force):
     return modified_blog_id_list
 
 
-def refresh_blogs(force):
+def refresh_blogs(force, no_pull):
     try:
-        blog_repo = fetch_blog_repo()
+        blog_repo = fetch_blog_repo(no_pull, no_pull)
         outdated = set(Blog.objects.values_list('id', flat=True))
         modified = convert_blogs_and_store_into_db(blog_repo, force)
     except subprocess.CalledProcessError as e:

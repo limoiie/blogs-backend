@@ -14,7 +14,9 @@ class Command(BaseCommand):
         parser.add_argument('url', type=str, help='Url to remote blog repo.')
         parser.add_argument('force', type=bool, default=False,
                             help='Force to refresh all the blogs.')
+        parser.add_argument('no_pull', type=bool, default=False,
+                            help='Re-process blogs without pulling repo.')
 
-    def handle(self, url, force, *args, **options):
+    def handle(self, url, force, no_pull, *args, **options):
         logger.info(f'Refresh blogs from {url}...')
-        refresh_blogs(force)
+        refresh_blogs(force, no_pull)
