@@ -22,11 +22,14 @@ pandoc_languages = [
     'rust', 'scala', 'scheme', 'sci', 'sed', 'sgml', 'sml', 'spdxcomments',
     'sql', 'sqlmysql', 'sqlpostgresql', 'stata', 'swift', 'tcl', 'tcsh',
     'texinfo', 'toml', 'typescript', 'verilog', 'vhdl', 'xml', 'xorg', 'xslt',
-    'xul', 'yacc', 'yaml', 'zsh', 'yara', 'example'
+    'xul', 'yacc', 'yaml', 'elisp', 'shell', 'sh', 'zsh', 'yara', 'example'
 ]
 
 map_language_from_pandoc_to_prism = {
-    'elisp': 'commonlisp',
+    'elisp': 'lisp',
+    'commonlisp': 'lisp',
+    'shell': 'bash',
+    'sh': 'bash'
 }
 
 

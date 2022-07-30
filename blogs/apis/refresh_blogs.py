@@ -82,15 +82,18 @@ def iterate_files(repo):
 
 
 def extract_title_from(fp):
+    # todo: through beautiful-soup
     with open(fp, 'r') as f:
         return f.readline().strip('#* ')
 
 
 def extract_abstract_from_html(content):
+    # todo: only text
     return content.split(b'\n', 1)[1].strip()[:400].decode(encoding='utf-8')
 
 
 def extract_tags_from_html(_content):
+    # todo: need implementation
     return []
 
 
