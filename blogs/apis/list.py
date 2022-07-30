@@ -24,8 +24,7 @@ def count_blogs(_request):
 def list_blogs(_request, page_num, page_size):
     offset = page_num * page_size
 
-    blogs = Blog.objects.order_by('-create_time')
-    blogs = blogs[offset:offset+page_size]
+    blogs = Blog.objects.order_by('-create_time')[offset:offset+page_size]
     data = [BlogWrapper.blog2json(blog) for blog in blogs]
     return _response_list(True, 'successful', {
         'page': data,

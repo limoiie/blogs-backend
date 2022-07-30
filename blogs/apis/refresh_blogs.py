@@ -83,7 +83,7 @@ def iterate_files(repo):
 
 def extract_title_from(fp):
     # todo: through beautiful-soup
-    with open(fp, 'r') as f:
+    with open(fp, 'r', encoding='utf-8') as f:
         return f.readline().strip('#* ')
 
 
@@ -140,7 +140,7 @@ def convert_blogs_and_store_into_db(blog_repo, force):
 
 def refresh_blogs(force, no_pull):
     try:
-        blog_repo = fetch_blog_repo(no_pull, no_pull)
+        blog_repo = fetch_blog_repo(no_pull)
         outdated = set(Blog.objects.values_list('id', flat=True))
         modified = convert_blogs_and_store_into_db(blog_repo, force)
     except subprocess.CalledProcessError as e:

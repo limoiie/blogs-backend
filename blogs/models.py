@@ -146,8 +146,8 @@ class BlogWrapper:
             'folder': blog.folder,
             'tags': list_tags(blog.tags.all()),
             'abstract': blog.abstract,
-            'createTime': time2str(blog.create_time),
-            'editTime': time2str(blog.edit_time),
+            'createTime': blog.create_time.timestamp(),
+            'editTime': blog.edit_time.timestamp(),
             'mdDocument': None,
             'htmlDocument': None
         }
@@ -178,6 +178,6 @@ class UserWrapper:
             'name': user.username,
             'email': user.email,
             'slogan': '#todo slogan',
-            'avater': '#todo avater',
+            'avatar': '#todo avatar',
             'token': '#todo token',
         }
