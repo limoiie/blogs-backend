@@ -34,7 +34,7 @@ map_language_from_pandoc_to_prism = {
 
 
 def decorate_html(html: bytes):
-    html_dom = bs4.BeautifulSoup(html, 'html.parser')
+    html_dom = bs4.BeautifulSoup(html.decode('utf-8'), 'html.parser')
     _make_header_as_link(html_dom)
     _decorate_prism_code(html_dom)
     return html_dom.encode()
@@ -78,14 +78,17 @@ def _decorate_prism_code(html_tag: bs4.BeautifulSoup):
         if 'class' not in pre_tag.attrs:
             continue
         if 'class' not in code_tag.attrs:
+            # noinspection PyTypeChecker
             code_tag.attrs['class'] = []
         for prism_cls in map(to_prism_cls, pre_tag.attrs['class']):
             if prism_cls is not None:
+                # noinspection PyUnresolvedReferences
                 pre_tag.attrs['class'].append(prism_cls)
+                # noinspection PyUnresolvedReferences
                 code_tag.attrs['class'].append(prism_cls)
 
     return html_tag
 
 
-def to_html_tag_id(text: bytes):
-    return re.sub(b'[^a-zA-Z0-9._-]', b'', text)
+def to_html_tag_id(text: str):
+    return re.sub(r'[^a-zA-Z0-9._-]', '', text)

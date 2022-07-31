@@ -110,28 +110,29 @@ def convert_blogs_and_store_into_db(blog_repo, force):
         mtime = datetime.datetime.fromtimestamp(fp.stat().st_mtime, tz=TZ)
 
         title = extract_title_from(fp)
-        blog_obj, created = Blog.objects.get_or_create(
+        blog, created = Blog.objects.get_or_create(
             title=title, author=get_author('limo'), defaults={
-                'create_time': ctime,
-                'edit_time': mtime,
+                'createTime': ctime,
+                'editTime': mtime,
             })
 
-        if force or created or blog_obj.edit_time < mtime:
+        if force or created or blog.editTime < mtime:
             # when created or modified
             logger.info(f'Update {title} ({fp.name})...')
 
             html = convert_to_html(fp)
-            blog_obj.create_time = ctime
-            blog_obj.edit_time = mtime
-            blog_obj.folder = fp.parent.relative_to(blog_repo)
-            blog_obj.abstract = extract_abstract_from_html(html)
-            blog_obj.html_doc.delete()
-            blog_obj.html_doc.save(f'{title}.html', ContentFile(html))
-            blog_obj.tags.set(extract_tags_from_html(html))
-            blog_obj.save()
+            blog.createTime = ctime
+            blog.editTime = mtime
+            blog.folder = fp.parent.relative_to(blog_repo)
+            blog.abstract = extract_abstract_from_html(html)
+            blog.htmlDocument.delete()
+            blog.htmlDocument.save(f'{title}.html', ContentFile(html))
+            blog.tags.set(extract_tags_from_html(html))
+            blog.fromOrg = True
+            blog.save()
 
             if not created:
-                modified_blog_id_list.add(blog_obj.id)
+                modified_blog_id_list.add(blog.id)
         else:
             # not modified, keep the same
             pass
@@ -141,14 +142,17 @@ def convert_blogs_and_store_into_db(blog_repo, force):
 def refresh_blogs(force, no_pull):
     try:
         blog_repo = fetch_blog_repo(no_pull)
-        outdated = set(Blog.objects.values_list('id', flat=True))
         modified = convert_blogs_and_store_into_db(blog_repo, force)
     except subprocess.CalledProcessError as e:
         logger.error(f'Failed to refresh blogs: {e}')
         return
 
+    outdated = set(Blog.objects.values_list('id', flat=True))
     for old_blog_id in outdated - modified:
         b = Blog.objects.get(id=old_blog_id)
-        b.md_doc.delete()
-        b.html_doc.delete()
+        if not b.fromOrg:
+            continue
+
+        b.mdDocument.delete()
+        b.htmlDocument.delete()
         b.delete()

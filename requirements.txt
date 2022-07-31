@@ -1,0 +1,5 @@
+bs4==4.11.1
+django==4.0
+django-cors-headers==3.13.0
+beautifulsoup4~=4.11.1
+pytz~=2022.1

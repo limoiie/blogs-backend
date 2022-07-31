@@ -9,7 +9,7 @@ from blogs.models import Blog
 
 def index(request):
     """Show a list of newest blogs"""
-    blogs = Blog.objects.order_by('-create_time')[:5]
+    blogs = Blog.objects.order_by('-createTime')[:5]
     context = {
         'latest_blogs': blogs
     }

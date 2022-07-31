@@ -1,32 +1,17 @@
-from django.http import JsonResponse
-
-from blogs.models import BlogWrapper, Blog
-
-
-def _response_count(count):
-    return JsonResponse(data={
-        'data': count
-    })
-
-
-def _response_list(state, msg, data):
-    return JsonResponse(data={
-        'state': state,
-        'message': msg,
-        'data': data
-    })
+from blogs.apis.quick_response import quick_json_response
+from blogs.models import Blog, BlogWrapper
 
 
 def count_blogs(_request):
-    return _response_count(Blog.objects.count())
+    return quick_json_response(code=0, data=Blog.objects.count())
 
 
 def list_blogs(_request, page_num, page_size):
     offset = page_num * page_size
 
-    blogs = Blog.objects.order_by('-create_time')[offset:offset+page_size]
-    data = [BlogWrapper.blog2json(blog) for blog in blogs]
-    return _response_list(True, 'successful', {
+    blogs = Blog.objects.order_by('-createTime')[offset:offset + page_size]
+    data = [BlogWrapper.blog2dic(blog) for blog in blogs]
+    return quick_json_response(code=0, data={
         'page': data,
         'count': Blog.objects.count()
     })
